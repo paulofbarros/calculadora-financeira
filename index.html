@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Financeira</title>
+    <style>
+        /* Todo o CSS da calculadora está aqui dentro */
+        .financial-calculator * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .financial-calculator {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+        }
+
+        .financial-calculator h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+        }
+
+        .calc-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+
+        .calc-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 120px;
+            gap: 10px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .input-row label {
+            font-weight: 500;
+            color: #34495e;
+            font-size: 0.9em;
+        }
+
+        .input-row input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            text-align: right;
+        }
+
+        .input-row input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .result-box .value {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .quick-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .summary-item {
+            background: white;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .summary-item.positive {
+            border-color: #27ae60;
+            background: rgba(39, 174, 96, 0.05);
+        }
+
+        .summary-item.negative {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.05);
+        }
+
+        .summary-item h4 {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+
+        .summary-item .amount {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .compound-sim {
+            background: #e8f6f3;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .sim-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .sim-input {
+            text-align: center;
+        }
+
+        .sim-input label {
+            display: block;
+            font-size: 0.8em;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+
+        .sim-input input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .financial-calculator {
+                margin: 10px;
+                padding: 20px;
+            }
+
+            .input-row {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+
+            .quick-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .sim-inputs {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .action-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .tip-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .tip-box strong {
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="financial-calculator">
+        <h2>💰 Calculadora de Prosperidade</h2>
+        
+        <div class="calc-section">
+            <h3>💵 Renda vs Gastos Mensais</h3>
+            
+            <div class="input-row">
+                <label>Renda total mensal:</label>
+                <input type="number" id="totalIncome" placeholder="0" oninput="calculateAll()">
+            </div>
+            
+            <div class="input-row">
+                <label>Gastos essenciais (moradia, alimentação):</label>
+                <input type="number" id="essentialExpenses" placeholder="0" oninput="calculateAll()">
+            </div>
+            
+            <div class="input-row">
+                <label>Gastos pessoais (lazer, compras):</label>
+                <input type="number" id="personalExpenses" placeholder="0" oninput="calculateAll()">
+            </div>
+
+            <div class="quick-summary">
+                <div class="summary-item">
+                    <h4>Renda Total</h4>
+                    <div class="amount" id="displayIncome">R$ 0</div>
+                </div>
+                <div class="summary-item">
+                    <h4>Gastos Totais</h4>
+                    <div class="amount" id="displayExpenses">R$ 0</div>
+                </div>
+                <div class="summary-item" id="balanceItem">
+                    <h4>Sobra/Falta</h4>
+                    <div class="amount" id="displayBalance">R$ 0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="calc-section">
+            <h3>📊 Análise da Regra 50-30-20</h3>
+            <div class="quick-summary">
+                <div class="summary-item">
+                    <h4>50% Essenciais</h4>
+                    <div class="amount" id="recommended50">R$ 0</div>
+                    <small>Recomendado</small>
+                </div>
+                <div class="summary-item">
+                    <h4>30% Pessoais</h4>
+                    <div class="amount" id="recommended30">R$ 0</div>
+                    <small>Recomendado</small>
+                </div>
+                <div class="summary-item">
+                    <h4>20% Investimentos</h4>
+                    <div class="amount" id="recommended20">R$ 0</div>
+                    <small>Você pode investir</small>
+                </div>
+            </div>
+            
+            <div class="tip-box">
+                <strong>💡 Dica:</strong> <span id="budgetAdvice">Preencha sua renda para ver recomendações personalizadas.</span>
+            </div>
+        </div>
+
+        <div class="calc-section">
+            <h3>🚀 Simulador de Juros Compostos</h3>
+            <div class="compound-sim">
+                <div class="sim-inputs">
+                    <div class="sim-input">
+                        <label>Valor Mensal (R$)</label>
+                        <input type="number" id="monthlyAmount" value="500" oninput="calculateCompound()">
+                    </div>
+                    <div class="sim-input">
+                        <label>Anos</label>
+                        <input type="number" id="years" value="20" oninput="calculateCompound()">
+                    </div>
+                    <div class="sim-input">
+                        <label>Juros Anuais (%)</label>
+                        <input type="number" id="interestRate" value="10" step="0.1" oninput="calculateCompound()">
+                    </div>
+                </div>
+                
+                <div class="result-box">
+                    <div>Resultado Final</div>
+                    <div class="value" id="finalResult">R$ 0</div>
+                    <small>Investido: <span id="totalInvested">R$ 0</span> | Juros: <span id="totalInterest">R$ 0</span></small>
+                </div>
+            </div>
+        </div>
+
+        <div class="calc-section">
+            <h3>🆘 Reserva de Emergência</h3>
+            <div class="input-row">
+                <label>Quantia já guardada:</label>
+                <input type="number" id="currentReserve" placeholder="0" oninput="calculateAll()">
+            </div>
+            
+            <div class="result-box">
+                <div>Meta: 6x seus gastos mensais</div>
+                <div class="value" id="emergencyGoal">R$ 0</div>
+                <small>Você tem: <span id="emergencyPercent">0%</span> da meta</small>
+            </div>
+            
+            <div class="tip-box">
+                <strong>⚠️ Importante:</strong> <span id="emergencyAdvice">Comece construindo sua reserva antes de investir em renda variável.</span>
+            </div>
+        </div>
+
+        <button class="action-btn" onclick="shareResults()">
+            📊 Compartilhar Meus Resultados
+        </button>
+    </div>
+
+    <script>
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        }
+
+        function calculateAll() {
+            const income = parseFloat(document.getElementById('totalIncome').value) || 0;
+            const essential = parseFloat(document.getElementById('essentialExpenses').value) || 0;
+            const personal = parseFloat(document.getElementById('personalExpenses').value) || 0;
+            const totalExpenses = essential + personal;
+            const balance = income - totalExpenses;
+            const currentReserve = parseFloat(document.getElementById('currentReserve').value) || 0;
+
+            document.getElementById('displayIncome').textContent = formatCurrency(income);
+            document.getElementById('displayExpenses').textContent = formatCurrency(totalExpenses);
+            document.getElementById('displayBalance').textContent = formatCurrency(balance);
+
+            const balanceItem = document.getElementById('balanceItem');
+            if (balance >= 0) {
+                balanceItem.className = 'summary-item positive';
+            } else {
+                balanceItem.className = 'summary-item negative';
+            }
+
+            document.getElementById('recommended50').textContent = formatCurrency(income * 0.5);
+            document.getElementById('recommended30').textContent = formatCurrency(income * 0.3);
+            document.getElementById('recommended20').textContent = formatCurrency(income * 0.2);
+
+            let advice = '';
+            if (income === 0) {
+                advice = 'Preencha sua renda para ver recomendações personalizadas.';
+            } else if (essential > income * 0.5) {
+                advice = '⚠️ Seus gastos essenciais estão acima do recomendado (50% da renda).';
+            } else if (balance < income * 0.2) {
+                advice = '⚠️ Tente economizar pelo menos 20% da renda para investimentos.';
+            } else {
+                advice = '✅ Parabéns! Você está no caminho certo para a prosperidade.';
+            }
+            document.getElementById('budgetAdvice').textContent = advice;
+
+            const emergencyGoal = totalExpenses * 6;
+            const emergencyPercent = emergencyGoal > 0 ? Math.min((currentReserve / emergencyGoal) * 100, 100) : 0;
+            
+            document.getElementById('emergencyGoal').textContent = formatCurrency(emergencyGoal);
+            document.getElementById('emergencyPercent').textContent = Math.round(emergencyPercent) + '%';
+
+            let emergencyAdvice = '';
+            if (emergencyPercent < 100) {
+                const missing = emergencyGoal - currentReserve;
+                emergencyAdvice = `Faltam ${formatCurrency(missing)} para completar sua reserva.`;
+            } else {
+                emergencyAdvice = '✅ Parabéns! Sua reserva de emergência está completa.';
+            }
+            document.getElementById('emergencyAdvice').textContent = emergencyAdvice;
+
+            calculateCompound();
+        }
+
+        function calculateCompound() {
+            const monthlyAmount = parseFloat(document.getElementById('monthlyAmount').value) || 0;
+            const years = parseFloat(document.getElementById('years').value) || 0;
+            const annualRate = parseFloat(document.getElementById('interestRate').value) || 0;
+
+            const monthlyRate = annualRate / 100 / 12;
+            const totalMonths = years * 12;
+            const totalInvested = monthlyAmount * totalMonths;
+
+            let finalAmount = 0;
+            if (monthlyRate > 0) {
+                finalAmount = monthlyAmount * ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate);
+            } else {
+                finalAmount = totalInvested;
+            }
+
+            const totalInterest = finalAmount - totalInvested;
+
+            document.getElementById('finalResult').textContent = formatCurrency(finalAmount);
+            document.getElementById('totalInvested').textContent = formatCurrency(totalInvested);
+            document.getElementById('totalInterest').textContent = formatCurrency(totalInterest);
+        }
+
+        function shareResults() {
+            const income = parseFloat(document.getElementById('totalIncome').value) || 0;
+            const expenses = (parseFloat(document.getElementById('essentialExpenses').value) || 0) + 
+                           (parseFloat(document.getElementById('personalExpenses').value) || 0);
+            const balance = income - expenses;
+            const finalAmount = document.getElementById('finalResult').textContent;
+
+            const message = `🎯 Minha Análise Financeira:
+💰 Renda: ${formatCurrency(income)}
+💸 Gastos: ${formatCurrency(expenses)}
+💵 Sobra: ${formatCurrency(balance)}
+🚀 Potencial em 20 anos: ${finalAmount}`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Minha Análise Financeira',
+                    text: message
+                });
+            } else {
+                navigator.clipboard.writeText(message).then(() => {
+                    alert('Resultado copiado para a área de transferência!');
+                });
+            }
+        }
+
+        calculateAll();
+    </script>
+</body>
+</html>
